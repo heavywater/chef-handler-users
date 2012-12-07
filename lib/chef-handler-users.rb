@@ -39,7 +39,10 @@ class Chef::Handler::Users < Chef::Handler
 
   def report
     updated_users = run_status.updated_resources.select do |resource|
-      resource.resource_name == "user"
+      Chef::Log.info "Checking resource #{resource.inspect}"
+      Chef::Log.info "Resource_name ivar #{resource.resource_name.inspect}"
+      Chef::Log.info "Resource_name class #{resource.resource_name.class}"
+      resource.resource_name =~ /user/i
     end
 
     if updated_users.empty?

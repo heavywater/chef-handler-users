@@ -31,7 +31,7 @@ class Chef::Handler::Users < Chef::Handler
   end
 
   def report
-    updated_users = run_status.updated.resources.find do |resource|
+    updated_users = run_status.updated_resources.find do |resource|
       resource.resource_name == "user"
     end
 

@@ -20,14 +20,21 @@ require 'rubygems'
 require 'chef/handler'
 require 'pony'
 
+
+
 class Chef::Handler::Users < Chef::Handler
   attr_reader :config
+  class ConfigurationError < StandardError; end
 
   def initialize(config={})
     @config = config
-    @config[:to_address] ||= "no@email.com"
-    @config[:from_address] ||= "yomommas@house.com"
     @config
+
+    %w[to_address from_address].map(&:to_sym).each do |key|
+      unless @config.has_key? key
+        raise ConfigurationError.new("Required configuration #{key} not passed to handler")
+      end
+    end
   end
 
   def report

@@ -27,7 +27,6 @@ class Chef::Handler::Users < Chef::Handler
     @config = config
     @config[:to_address] ||= "no@email.com"
     @config[:from_address] ||= "yomommas@house.com"
-    @config[:path] ||= "/var/chef/reports/users"
     @config
   end
 

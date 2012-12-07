@@ -38,12 +38,12 @@ class Chef::Handler::Users < Chef::Handler
   end
 
   def report
-    updated_users = run_status.updated_resources.inject([]) do |updated_users, resource|
-      updated_users << resource if resource.resource_name == "user"
-      updated_users
+    updated_users = run_status.updated_resources.select do |resource|
+      resource.resource_name == "user"
     end
 
     if updated_users.empty?
+      Chef::Log.info "Users handler detected no user changes"
       return
     else
       Chef::Log.info "Users handler detected #{updated_users.length} user changes. Generating summary email for #{@config[:to_address]}"

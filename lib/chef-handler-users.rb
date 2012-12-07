@@ -18,35 +18,51 @@
 
 require 'rubygems'
 require 'chef/handler'
-# require 'pony'
+require 'pony'
 
 class Chef::Handler::Users < Chef::Handler
   attr_reader :config
+
   def initialize(config={})
     @config = config
+    @config[:to_address] ||= "no@email.com"
+    @config[:from_address] ||= "yomommas@house.com"
     @config[:path] ||= "/var/chef/reports/users"
     @config
   end
 
   def report
-    build_report_dir
-    savetime = Time.now.strftime("%Y%m%d%H%M%S")
-
-    updated_users = run_status.updated_resources.inject([]) do |updated_users, resource|
-      updated_users << resource if resource.resource_name =~ /user/i
-      updated_users
+    updated_users = run_status.updated.resources.find do |resource|
+      resource.resource_name == "user"
     end
 
-    File.open(File.join(config[:path], "chef-run-report-#{savetime}.json"), "w") do |file|
-      file.puts Chef::JSONCompat.to_json_pretty(updated_users)
-    end
+    subject = "Chef run on #{node.name} at #{Time.now.asctime} resulted in change of #{updated_users.length} users"
+    message = generate_email_body(updated_users)
+
+    Pony.mail(:to => @config[:to_address],
+              :from => @config[:from_address],
+              :subject => subject,
+              :body => message)
   end
 
-  def build_report_dir
-    unless File.exists?(config[:path])
-      FileUtils.mkdir_p(config[:path])
-      File.chmod(00700, config[:path])
-    end
+  def generate_email_body users
+    users.inject([]) do |body, user|
+      body << summary_for_user(user)
+      body
+    end.join("\n")
+  end
+
+  def summary_for_user user
+    <<-EOH
+User #{user.name} updated:
+- resource action: #{user.action}
+- comment (GECOS): #{user.comment}
+- system username: #{user.username}
+- system uid: #{user.uid}
+- system gid: #{user.gid}
+- system shell: #{user.shell}
+- system user: #{user.system}
+    EOH
   end
 
 end

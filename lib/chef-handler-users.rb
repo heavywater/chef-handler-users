@@ -42,7 +42,7 @@ class Chef::Handler::Users < Chef::Handler
       resource.resource_name == "user"
     end
 
-    return if updated_users.nil?
+    return if updated_users.nil? || updated_users.empty?
 
     subject = "Chef run on #{node.name} at #{Time.now.asctime} resulted in change of #{updated_users.length} users"
     message = generate_email_body(updated_users)

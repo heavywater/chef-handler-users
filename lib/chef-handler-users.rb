@@ -38,13 +38,15 @@ class Chef::Handler::Users < Chef::Handler
   end
 
   def report
+    updated_users = []
     updated_users = run_status.updated_resources.find_all do |resource|
+      Chef::Log.info "Checking resource #{resource.name} #{resource.resource_name}"
       resource.resource_name == "user"
     end
 
-    return if updated_users.nil? || updated_users.empty?
+    return if updated_users.empty?
 
-    subject = "Chef run on #{node.name} at #{Time.now.asctime} resulted in change of #{updated_users.length} users"
+    subject = "Chef run on #{node.name} at #{Time.now} resulted in change of #{updated_users.length} users"
     message = generate_email_body(updated_users)
 
     Chef::Log.info "Users handler detected #{updated_users.length} changes, sending summary email to #{@config[:to_address]}"

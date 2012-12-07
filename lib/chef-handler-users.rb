@@ -38,18 +38,20 @@ class Chef::Handler::Users < Chef::Handler
   end
 
   def report
-    updated_users = []
-    updated_users = run_status.updated_resources.find_all do |resource|
-      Chef::Log.info "Checking resource #{resource.name} #{resource.resource_name}"
-      resource.resource_name == "user"
+    updated_users = run_status.updated_resources.inject([]) do |updated_users, resource|
+      updated_users << resource if resource.resource_name == "user"
+      updated_users
     end
 
-    return if updated_users.empty?
+    if updated_users.empty?
+      return
+    else
+      Chef::Log.info "Users handler detected #{updated_users.length} user changes. Generating summary email for #{@config[:to_address]}"
+    end
 
     subject = "Chef run on #{node.name} at #{Time.now} resulted in change of #{updated_users.length} users"
-    message = generate_email_body(updated_users)
 
-    Chef::Log.info "Users handler detected #{updated_users.length} changes, sending summary email to #{@config[:to_address]}"
+    message = generate_email_body(updated_users)
 
     Pony.mail(:to => @config[:to_address],
               :from => @config[:from_address],

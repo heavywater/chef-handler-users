@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |gem|
   gem.name        = "chef-handler-users"
-  gem.version     = "0.1.0"
+  gem.version     = "0.1.1"
   gem.authors     = ["Heavy Water Operations, LLC. (OR)"]
   gem.email       = ["ops@hw-ops.com"]
   gem.homepage    = "http://github.com/heavywater/chef-handler-users"

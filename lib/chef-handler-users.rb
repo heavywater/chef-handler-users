@@ -20,20 +20,21 @@ require 'rubygems'
 require 'chef/handler'
 require 'pony'
 
-
-
 class Chef::Handler::Users < Chef::Handler
   attr_reader :config
   class ConfigurationError < StandardError; end
 
   def initialize(config={})
     @config = config
-    @config
 
-    %w[to_address from_address].map(&:to_sym).each do |key|
+    %w[to from].each do |key|
       unless @config.has_key? key
         raise ConfigurationError.new("Required configuration #{key} not passed to handler")
       end
+    end
+
+    if @config[:via] == 'smtp' && !@config[:via_options]
+      raise ConfigurationError.new("via_options is required for smtp")
     end
   end
 
@@ -46,17 +47,19 @@ class Chef::Handler::Users < Chef::Handler
       Chef::Log.info "Users handler detected no user changes"
       return
     else
-      Chef::Log.info "Users handler detected #{updated_users.length} user changes. Generating summary email for #{@config[:to_address]}"
+      Chef::Log.info "Users handler detected #{updated_users.length} user changes. Generating summary email for #{@config[:to]}"
     end
 
     subject = "Chef run on #{node.name} at #{Time.now} resulted in change of #{updated_users.length} users"
 
     message = generate_email_body(updated_users)
 
-    Pony.mail(:to => @config[:to_address],
-              :from => @config[:from_address],
-              :subject => subject,
-              :body => message)
+    Pony.mail(
+      ensure_hash(@config).update(
+        :subject => subject,
+        :body => message
+      )
+    )
   end
 
   def generate_email_body users
@@ -77,6 +80,14 @@ User #{user.name} updated:
 - system shell: #{user.shell}
 - system user: #{user.system}
     EOH
+  end
+
+  def ensure_hash(hash_thing)
+    new_h = {}
+    hash_thing.to_hash.each do |k,v|
+      new_h[k.to_sym] = v.kind_of?(Hash) || v.kind_of?(Chef::Node::Attribute) ? ensure_hash(v) : v
+    end
+    new_h
   end
 
 end

@@ -3,12 +3,13 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |gem|
   gem.name        = "chef-handler-users"
-  gem.version     = "0.1.1"
+  gem.version     = "0.1.2"
   gem.authors     = ["Heavy Water Operations, LLC. (OR)"]
   gem.email       = ["ops@hw-ops.com"]
   gem.homepage    = "http://github.com/heavywater/chef-handler-users"
   gem.summary     = "Chef Handler to report changes in users"
-  gem.description = "Chef Handler to report changes in users"
+  gem.description = "Chef Handler that generates and sends email on any change to users"
+  gem.license     = "APLv2"
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }

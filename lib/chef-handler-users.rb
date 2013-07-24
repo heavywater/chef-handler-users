@@ -84,9 +84,10 @@ User #{user.name} updated:
 
   def ensure_hash(hash_thing)
     new_h = {}
-    hash_thing.each do |k,v|
-      new_h[k.to_sym] = v.kind_of?(Hash) || v.kind_of?(Node::Attribute) ? to_hash(v) : v
+    hash_thing.to_hash.each do |k,v|
+      new_h[k.to_sym] = v.kind_of?(Hash) || v.kind_of?(Chef::Node::Attribute) ? ensure_hash(v) : v
     end
     new_h
   end
+
 end
